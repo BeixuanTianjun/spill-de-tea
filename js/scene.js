@@ -1,8 +1,8 @@
 /* ============================================================
    SPILL DE TEA — 3D signature cup
-   Procedurally built with three.js: glass tumbler, layered
-   milk-tea liquid (custom shader), boba, dome lid, straw,
-   wrapped label, and drifting tea-dust particles.
+   Procedurally built with three.js: a printed paper cup — lathed
+   body, full-height wrap generated in brandmark.js, solid lid,
+   contact shadow and drifting tea-dust particles.
    ============================================================ */
 (function () {
   'use strict';
@@ -55,7 +55,7 @@
   fill.position.set(-3.4, -1.6, 4);
   scene.add(fill);
 
-  var top = new THREE.PointLight(0xffffff, 1.1, 16);
+  var top = new THREE.PointLight(0xffffff, 0.55, 16);
   top.position.set(0, 5, 1.5);
   scene.add(top);
 
@@ -89,184 +89,77 @@
   cup.position.y = -1.35;
   scene.add(cup);
 
-  /* glass shell */
-  var glassMat = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.13,
-    roughness: 0.03, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05,
-    side: THREE.DoubleSide, depthWrite: false
+  /* paper body — the sleeve prints over it, so it only shows at the base */
+  var bodyMat = new THREE.MeshStandardMaterial({
+    color: 0xf3ecdd, roughness: 0.86, metalness: 0, side: THREE.DoubleSide
   });
-  var glass = new THREE.Mesh(new THREE.LatheGeometry(lathePoints(1), 96), glassMat);
-  cup.add(glass);
+  var body = new THREE.Mesh(new THREE.LatheGeometry(lathePoints(1), 96), bodyMat);
+  cup.add(body);
 
-  /* rim highlight */
-  var rimRing = new THREE.Mesh(
-    new THREE.TorusGeometry(1.15, 0.028, 16, 96),
-    new THREE.MeshStandardMaterial({ color: 0xf6f1e7, roughness: 0.3, metalness: 0.35 })
-  );
-  rimRing.rotation.x = Math.PI / 2;
-  rimRing.position.y = H + 0.06;
-  cup.add(rimRing);
+  /* ── printed sleeve ───────────────────────────────────────
+     A full-height printed wrap in the manner of a modern tea
+     house: botanical ink over cream, a gold-ruled wordmark band,
+     and the house emblem above it. The emblem is a real image,
+     so the texture is drawn once without it and repainted when
+     it arrives.                                                 */
+  var sleeveTop = 3.28, sleeveBot = 0.06;
+  var sleeveH = sleeveTop - sleeveBot;
+  var wrapCanvas = document.createElement('canvas');
+  SDTBrand.wrap(wrapCanvas);
 
-  /* ── liquid (vertical gradient shader) ────────────────── */
-  var LEVEL = 3.02;
-  var liquidMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uTea:   { value: new THREE.Color(0x3f2208) },
-      uMid:   { value: new THREE.Color(0xb3763f) },
-      uMilk:  { value: new THREE.Color(0xf2e0c4) },
-      uLevel: { value: LEVEL },
-      uTime:  { value: 0 }
-    },
-    vertexShader: [
-      'varying float vY; varying vec3 vN; varying vec3 vP;',
-      'void main(){ vY = position.y; vN = normalize(normalMatrix * normal);',
-      ' vec4 mv = modelViewMatrix * vec4(position,1.0); vP = mv.xyz;',
-      ' gl_Position = projectionMatrix * mv; }'
-    ].join('\n'),
-    fragmentShader: [
-      'varying float vY; varying vec3 vN; varying vec3 vP;',
-      'uniform vec3 uTea; uniform vec3 uMid; uniform vec3 uMilk;',
-      'uniform float uLevel; uniform float uTime;',
-      'void main(){',
-      ' float t = clamp(vY / uLevel, 0.0, 1.0);',
-      ' vec3 c = mix(uTea, uMid, smoothstep(0.0, 0.42, t));',
-      ' c = mix(c, uMilk, smoothstep(0.68, 1.0, t));',
-      ' float swirl = 0.045 * sin(vY * 7.0 + uTime * 1.1);',
-      ' c += swirl;',
-      ' float fres = pow(1.0 - abs(dot(normalize(vN), normalize(-vP))), 2.4);',
-      ' c += fres * 0.32;',
-      ' gl_FragColor = vec4(c, 0.88); }'
-    ].join('\n'),
-    transparent: true
-  });
+  var wrapTex = new THREE.CanvasTexture(wrapCanvas);
+  if ('encoding' in wrapTex) wrapTex.encoding = THREE.sRGBEncoding;
+  wrapTex.anisotropy = renderer.capabilities.getMaxAnisotropy
+    ? renderer.capabilities.getMaxAnisotropy() : 1;
 
-  var liquid = new THREE.Mesh(new THREE.LatheGeometry(lathePoints(0.955, LEVEL), 80), liquidMat);
-  cup.add(liquid);
+  var emblemImg = new Image();
+  emblemImg.onload = function () {
+    SDTBrand.wrap(wrapCanvas, emblemImg);
+    wrapTex.needsUpdate = true;
+  };
+  emblemImg.src = SDTBrand.emblemSrc;
 
-  /* liquid surface disc */
-  var surface = new THREE.Mesh(
-    new THREE.CircleGeometry(radiusAt(LEVEL) * 0.955, 72),
-    new THREE.MeshStandardMaterial({ color: 0xf3e2ca, roughness: 0.35, metalness: 0.05 })
-  );
-  surface.rotation.x = -Math.PI / 2;
-  surface.position.y = LEVEL;
-  cup.add(surface);
-
-  /* ── boba pearls ──────────────────────────────────────── */
-  var bobaGeo = new THREE.SphereGeometry(0.135, 20, 16);
-  var bobaMat = new THREE.MeshStandardMaterial({ color: 0x2a1a10, roughness: 0.22, metalness: 0.1 });
-  var bobas = [];
-  for (var b = 0; b < 20; b++) {
-    var m = new THREE.Mesh(bobaGeo, bobaMat);
-    var ang = Math.random() * Math.PI * 2;
-    var rad = Math.sqrt(Math.random()) * 0.5;
-    m.position.set(Math.cos(ang) * rad, 0.16 + Math.random() * 0.42, Math.sin(ang) * rad);
-    m.userData.p = Math.random() * Math.PI * 2;
-    m.userData.y0 = m.position.y;
-    cup.add(m);
-    bobas.push(m);
-  }
-
-  /* ── wrapped label ────────────────────────────────────── */
-  function labelTexture() {
-    var c = document.createElement('canvas');
-    c.width = 2048; c.height = 512;
-    var x = c.getContext('2d');
-
-    x.fillStyle = '#0B3B2E';
-    x.fillRect(0, 0, c.width, c.height);
-
-    // subtle inner keyline
-    x.strokeStyle = 'rgba(200,162,74,.45)';
-    x.lineWidth = 3;
-    x.strokeRect(20, 34, c.width - 40, c.height - 68);
-
-    x.textAlign = 'center';
-    x.textBaseline = 'middle';
-
-    // two repeats around the cup -> the viewer always faces one whole wordmark
-    var CELLS = 2, cw = c.width / CELLS;
-    for (var k = 0; k < CELLS; k++) {
-      var cx = cw * (k + 0.5);
-
-      x.fillStyle = '#C8A24A';
-      x.font = 'italic 600 132px Georgia, "Times New Roman", serif';
-      x.fillText('Spill de Tea', cx, 212);
-
-      x.fillStyle = 'rgba(246,241,231,.66)';
-      x.font = '500 40px Helvetica, Arial, sans-serif';
-      x.fillText('P R E M I U M   T A S T E   ·   S T U D E N T   P R I C E', cx, 316);
-
-      x.fillStyle = 'rgba(200,162,74,.85)';
-      x.font = '400 34px Helvetica, Arial, sans-serif';
-      x.fillText('250 ml  ·  FRESH BATCH', cx, 386);
-
-      // leaf ornament on the seam between cells
-      var sx = cw * k;
-      x.save();
-      x.translate(sx, c.height / 2);
-      x.strokeStyle = 'rgba(200,162,74,.55)';
-      x.lineWidth = 4;
-      x.beginPath();
-      x.moveTo(0, -96); x.lineTo(0, 96);
-      x.stroke();
-      x.restore();
-    }
-
-    var t = new THREE.CanvasTexture(c);
-    if ('encoding' in t) t.encoding = THREE.sRGBEncoding;
-    t.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
-    return t;
-  }
-
-  var bandY = 1.30, bandH = 1.02;
   var band = new THREE.Mesh(
     new THREE.CylinderGeometry(
-      radiusAt(bandY + bandH / 2) * 1.02, radiusAt(bandY - bandH / 2) * 1.02,
-      bandH, 96, 1, true
+      radiusAt(sleeveTop) * 1.014, radiusAt(sleeveBot) * 1.014,
+      sleeveH, 96, 1, true
     ),
     new THREE.MeshStandardMaterial({
-      map: labelTexture(), roughness: 0.58, metalness: 0.06, side: THREE.FrontSide
+      map: wrapTex, roughness: 0.6, metalness: 0.04, side: THREE.FrontSide
     })
   );
-  band.position.y = bandY;
+  band.position.y = (sleeveTop + sleeveBot) / 2;
   cup.add(band);
 
-  /* ── dome lid ─────────────────────────────────────────── */
+  /* ── lid ─────────────────────────────────────────────────
+     One lathed profile: a gripping skirt that reaches down over
+     the printed edge, a shoulder, then a shallow crown. Drawn as
+     a single surface so the crown can never read wider than the
+     skirt it sits on.                                           */
+  var lidProfile = [
+    [1.172, -0.170], [1.192, -0.130], [1.203, -0.060],
+    [1.205,  0.010], [1.196,  0.062], [1.160,  0.104],
+    [1.050,  0.148], [0.860,  0.180], [0.600,  0.201],
+    [0.300,  0.212], [0.000,  0.215]
+  ];
+  var lidPts = lidProfile.map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+
   var lid = new THREE.Mesh(
-    new THREE.SphereGeometry(1.16, 64, 28, 0, Math.PI * 2, 0, Math.PI * 0.44),
-    new THREE.MeshPhysicalMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.15, roughness: 0.04,
-      metalness: 0, clearcoat: 1, side: THREE.DoubleSide, depthWrite: false
+    new THREE.LatheGeometry(lidPts, 96),
+    new THREE.MeshStandardMaterial({
+      color: 0x080706, roughness: 0.88, metalness: 0, side: THREE.DoubleSide
     })
   );
-  lid.position.y = H + 0.05;
+  lid.position.y = 3.38;
   cup.add(lid);
 
   var lidRing = new THREE.Mesh(
-    new THREE.TorusGeometry(1.17, 0.055, 16, 96),
-    new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.28, metalness: 0.75 })
+    new THREE.TorusGeometry(1.208, 0.026, 14, 96),
+    new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.32, metalness: 0.7 })
   );
   lidRing.rotation.x = Math.PI / 2;
-  lidRing.position.y = H + 0.05;
+  lidRing.position.y = 3.39;
   cup.add(lidRing);
-
-  /* ── straw ────────────────────────────────────────────── */
-  var straw = new THREE.Group();
-  var strawBody = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.088, 0.088, 3.6, 24, 1, false),
-    new THREE.MeshStandardMaterial({ color: 0xefe3cd, roughness: 0.42, metalness: 0.12 })
-  );
-  straw.add(strawBody);
-  var strawTip = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.1, 0.1, 0.42, 24),
-    new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.3, metalness: 0.6 })
-  );
-  strawTip.position.y = 1.59;
-  straw.add(strawTip);
-  straw.position.set(0.32, 2.75, 0.14);
-  straw.rotation.z = -0.2;
-  cup.add(straw);
 
   /* ── soft contact shadow ──────────────────────────────── */
   (function () {
@@ -377,18 +270,6 @@
     cup.scale.set(s, s, s);
 
     /* liquid life */
-    liquidMat.uniforms.uTime.value = t;
-    surface.rotation.z = Math.sin(t * 1.25) * 0.05;
-    surface.position.y = LEVEL + Math.sin(t * 1.8) * 0.014;
-
-    for (var i = 0; i < bobas.length; i++) {
-      var m = bobas[i];
-      m.position.y = m.userData.y0 + Math.sin(t * 1.3 + m.userData.p) * 0.055;
-      m.rotation.y += 0.006;
-    }
-
-    straw.rotation.z = -0.2 + Math.sin(t * 0.9) * 0.012;
-
     if (dust) {
       dust.rotation.y = t * 0.02;
       dust.position.y = Math.sin(t * 0.28) * 0.35;

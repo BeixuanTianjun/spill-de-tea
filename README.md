@@ -19,12 +19,25 @@ open index.html
 npx http-server . -p 8080 -c-1
 ```
 
-Untuk deploy: unggah folder ini apa adanya (GitHub Pages, Netlify, Vercel, cPanel).
+Situsnya statis murni — tidak ada build step, tidak ada dependency yang perlu
+di-install.
+
+## Deploy
+
+`index.html` ada di root repo, jadi tidak perlu file konfigurasi apa pun:
+
+- **Vercel / Netlify** — import repo ini, Framework Preset **Other**, Build
+  Command dan Output Directory dikosongkan, lalu Deploy.
+- **GitHub Pages** — Settings -> Pages, pilih branch-nya, folder `/ (root)`.
+- **Hosting biasa / cPanel** — unggah seluruh isi repo apa adanya.
+
+Seluruh path aset di halaman ini relatif, jadi situsnya aman dipasang di root
+domain maupun di dalam subfolder.
 
 ## Struktur
 
 ```
-Spill_de_Tea/
+.
 ├── index.html              # seluruh markup halaman
 ├── css/
 │   ├── fonts.css           # @font-face untuk font yang di-host sendiri
@@ -42,12 +55,28 @@ Spill_de_Tea/
 `js/scene.js` membangun gelasnya langsung lewat kode — tidak ada file model
 eksternal yang perlu di-load:
 
-- **Badan gelas** — `LatheGeometry` dari profil siluet, material kaca fisik
-- **Isi minuman** — `ShaderMaterial` custom dengan gradien vertikal
-  (teh pekat → milk tea → lapisan susu di atas) plus fresnel di tepi
-- **Boba** — 20 bola yang mengambang pelan, terlihat samar menembus minuman
-- **Label** — di-generate ke `<canvas>` lalu dibungkus ke silinder
-- **Tutup dome, straw, bayangan kontak, dan partikel** melayang di sekitarnya
+- **Badan cup** — `LatheGeometry` dari profil siluet, material kertas opaque
+- **Wrap cetak** — setinggi badan cup, teksturnya di-generate di
+  `js/brandmark.js` (lihat bawah)
+- **Tutup** — skirt + kubah gelap dengan cincin emas
+- **Bayangan kontak dan partikel** melayang di sekitarnya
+
+Cup-nya opaque seperti cup kertas, jadi isinya memang tidak terlihat — itu
+disengaja mengikuti arahan desain. Warna tiap varian minuman tetap terbaca di
+ilustrasi cup pada kartu menu (CSS, bukan 3D).
+
+### Wrap & emblem
+
+`js/brandmark.js` menggambar seluruh artwork sleeve ke `<canvas>`:
+
+- Motif botani — daun, pakis, melati, mawar — disebar di grid ber-jitter supaya
+  rata, dari seed tetap supaya tidak berubah tiap reload, dan digandakan di
+  sambungan supaya menyambung melingkari cup
+- Band jade bergaris emas berisi wordmark, strapline di bawahnya
+- Emblem rumah: `assets/emblem.png`, artwork logo asli yang dipotong dari
+  kertasnya (alpha dari jarak ke warna kertas, di-unpremultiply supaya tepinya
+  tajam). Path-nya dideklarasikan sekali di `brandmark.js` lalu disuntikkan ke
+  setiap elemen `[data-emblem]` — navigasi, footer, loader
 
 Interaksi: gelas berputar pelan, mengikuti posisi kursor/jari, lalu bergeser dan
 mengecil saat halaman di-scroll turun.
