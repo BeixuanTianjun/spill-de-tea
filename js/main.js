@@ -140,14 +140,14 @@
     var bars = $('.price__bars'), ring = $('#ringFg');
     if (!bars || !('IntersectionObserver' in window)) {
       if (bars) bars.classList.add('in');
-      if (ring) ring.style.strokeDashoffset = 327 * (1 - 0.68);
+      if (ring) ring.style.strokeDashoffset = 327 * (1 - 0.73);
       return;
     }
     var o = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
         if (!e.isIntersecting) return;
         bars.classList.add('in');
-        if (ring) ring.style.strokeDashoffset = 327 * (1 - 0.68);
+        if (ring) ring.style.strokeDashoffset = 327 * (1 - 0.73);
         o.disconnect();
       });
     }, { threshold: 0.25 });

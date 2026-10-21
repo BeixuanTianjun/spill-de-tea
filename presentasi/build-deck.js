@@ -93,7 +93,7 @@ block('Key Resources', [
 ], colX(1), TOP + halfH + GAP, CW, halfH);
 
 block('Value Propositions', [
-  'Rasa premium harga mahasiswa: Rp13.000–15.000 vs kompetitor Rp25.000–38.000',
+  'Rasa premium harga mahasiswa: Rp15.000–25.000 vs kompetitor Rp25.000–38.000',
   'Tanpa antre — pickup lewat jalur khusus pre-order',
   'Selalu fresh: diproduksi H-1, dijaga dingin sampai pickup',
   'Gula aren asli & bean curd sutra',
@@ -132,10 +132,10 @@ block('Cost Structure', [
 ], X0, BOTY, BW, BOTH);
 
 block('Revenue Streams', [
-  'Penjualan per botol: Aren Rp13.000 · Jasmine Bean Curd & Matcha Cloud Rp15.000',
+  'Penjualan per botol: Aren Rp15.000 · Jasmine Bean Curd Rp20.000 · Matcha Cloud Rp25.000',
   'Paket bundling 5 & 10 botol',
   'Deposit pre-order — kas masuk sebelum produksi',
-  'Margin kotor ± 68% per botol (Aren)'
+  'Margin kotor ± 73% per botol (Aren)'
 ], X0 + BW + GAP, BOTY, BW, BOTH);
 
 s.addNotes('Bacanya dari kanan: segmen dan value proposition dulu, lalu cara menjangkau, lalu yang di belakang layar. Tekankan bahwa deposit pre-order membuat kas masuk sebelum biaya produksi keluar.');
