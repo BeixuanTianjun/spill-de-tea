@@ -41,7 +41,7 @@
   camera.lookAt(0.9, -0.1, 0);
 
   /* ── lighting ─────────────────────────────────────────── */
-  scene.add(new THREE.HemisphereLight(0xdceeea, 0x102828, 0.85));
+  scene.add(new THREE.HemisphereLight(0xfff1d0, 0x5a4318, 0.85));
 
   var key = new THREE.DirectionalLight(0xfff4dd, 2.1);
   key.position.set(4, 6.5, 5);
