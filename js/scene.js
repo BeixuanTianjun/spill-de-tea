@@ -41,17 +41,17 @@
   camera.lookAt(0.9, -0.1, 0);
 
   /* ── lighting ─────────────────────────────────────────── */
-  scene.add(new THREE.HemisphereLight(0xdff0e6, 0x0b2a20, 0.85));
+  scene.add(new THREE.HemisphereLight(0xdceeea, 0x102828, 0.85));
 
   var key = new THREE.DirectionalLight(0xfff4dd, 2.1);
   key.position.set(4, 6.5, 5);
   scene.add(key);
 
-  var rim = new THREE.DirectionalLight(0xc8a24a, 2.4);
+  var rim = new THREE.DirectionalLight(0xc99a4e, 2.4);
   rim.position.set(-5, 2.5, -4);
   scene.add(rim);
 
-  var fill = new THREE.PointLight(0x9fe0c2, 1.5, 22);
+  var fill = new THREE.PointLight(0x9fd2cc, 1.5, 22);
   fill.position.set(-3.4, -1.6, 4);
   scene.add(fill);
 
@@ -155,7 +155,7 @@
 
   var lidRing = new THREE.Mesh(
     new THREE.TorusGeometry(1.208, 0.026, 14, 96),
-    new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.32, metalness: 0.7 })
+    new THREE.MeshStandardMaterial({ color: 0xc99a4e, roughness: 0.32, metalness: 0.7 })
   );
   lidRing.rotation.x = Math.PI / 2;
   lidRing.position.y = 3.39;

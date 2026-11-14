@@ -9,9 +9,9 @@
 
   var EMBLEM_SRC = 'assets/emblem.png';
 
-  var JADE = '#0B3B2E', JADE_MID = '#17604A', JADE_LT = '#2E7C62',
-      GOLD = '#C8A24A', GOLD_LT = '#E3C583',
-      CREAM = '#F6F1E7', CREAM_2 = '#EDE3CE';
+  var JADE = '#183A3A', JADE_MID = '#2F6262', JADE_LT = '#487878',
+      GOLD = '#C99A4E', GOLD_LT = '#EBCF8E',
+      CREAM = '#F4EAD6', CREAM_2 = '#EBDFC8';
 
   /* deterministic RNG — the wrap must not reshuffle between loads */
   function rng(seed) {
@@ -183,15 +183,15 @@
       c.fillText('Spill de Tea', cx, bandY + bandH / 2 + 2);
 
       c.save();
-      c.shadowColor = 'rgba(246,241,231,.95)';
+      c.shadowColor = 'rgba(244,234,214,.95)';
       c.shadowBlur = 14;
-      c.fillStyle = 'rgba(11,59,46,.82)';
+      c.fillStyle = 'rgba(24,58,58,.82)';
       c.font = '600 30px Helvetica, Arial, sans-serif';
       c.fillText('P R E M I U M   T A S T E   ·   S T U D E N T   P R I C E', cx, 872);
       c.restore();
     }
 
-    c.strokeStyle = 'rgba(200,162,74,.6)';
+    c.strokeStyle = 'rgba(201,154,78,.6)';
     c.lineWidth = 4;
     c.beginPath();
     c.moveTo(0, 26); c.lineTo(W, 26);
