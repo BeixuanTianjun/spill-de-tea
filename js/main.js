@@ -179,7 +179,7 @@
     });
 
     /* scroll-spy */
-    var secs = ['#filosofi', '#menu', '#cara', '#harga', '#sistem']
+    var secs = ['#filosofi', '#menu', '#cara']
       .map(function (id) { return $(id); }).filter(Boolean);
     if ('IntersectionObserver' in window) {
       var spy = new IntersectionObserver(function (es) {
